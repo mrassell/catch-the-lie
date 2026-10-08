@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CASES } from "./cases.js";
 
 const GREETING = "I'm Professor Pixel. I sound sure, but am I right?";
@@ -43,6 +43,11 @@ export default function App() {
   const [bubble, setBubble] = useState({ text: GREETING, src: false });
   const [result, setResult] = useState(null); // { got, lies, oops, pts }
   const [finished, setFinished] = useState(false);
+
+  const truthRef = useRef(null);
+  useEffect(() => {
+    if (result) truthRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [result]);
 
   const c = CASES[idx];
   const lieCount = c.lines.filter((l) => l.lie).length;
@@ -169,11 +174,15 @@ export default function App() {
           </main>
 
           {done && (
-            <section className="why">
+            <section className="truth" ref={truthRef}>
+              <h2>Case solved. Here's the truth:</h2>
               {c.lines.filter((l) => l.lie).map((l, i) => (
-                <div key={i}><b>Why it's a lie:</b> {l.lie}</div>
+                <div className="fact" key={i}>
+                  <p className="statement">{l.truth}</p>
+                  <p className="how"><b>How we know:</b> {l.lie}</p>
+                </div>
               ))}
-              {result.oops > 0 && <div>Lines with ✓ were true, so circling them cost 50 points each.</div>}
+              {result.oops > 0 && <p className="note">Lines with ✓ were true, so circling them cost 50 points each.</p>}
             </section>
           )}
         </>

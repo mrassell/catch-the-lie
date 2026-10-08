@@ -66,8 +66,16 @@ button:focus-visible, .line:focus-visible { outline: 3px solid #f2c94c; outline-
 .btn:disabled { background: #c4b9b9; cursor: not-allowed; }
 .btn.dark { background: var(--ink); }
 
-.why { background: #fff; border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; font-size: 17px; line-height: 1.45; }
-.why b { color: var(--red); }
+/* Truth sandwich: the corrected fact is the payoff, so it is the biggest thing on screen after Check */
+.truth { background: #e8f5ee; border: 3px solid var(--green); border-radius: 16px; padding: 22px 24px; display: grid; gap: 16px; }
+.truth h2 { margin: 0; font-size: 18px; color: var(--green); }
+.fact { display: grid; gap: 6px; }
+.statement { margin: 0; font-size: clamp(22px, 3.2vw, 28px); font-weight: 700; line-height: 1.3; }
+.statement::before { content: "✓ "; color: var(--green); }
+.how { margin: 0; font-size: 17px; line-height: 1.45; color: var(--soft); }
+.how b { color: var(--ink); }
+.note { margin: 0; font-size: 15px; color: var(--soft); }
+.line.lie .txt { text-decoration: line-through; text-decoration-color: var(--red); text-decoration-thickness: 2px; color: var(--soft); }
 
 .end { background: var(--pad); border-radius: 14px; padding: 28px; display: grid; gap: 14px; text-align: center; justify-items: center; }
 .end h2 { margin: 0; font-size: clamp(26px, 5vw, 36px); }
