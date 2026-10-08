@@ -12,23 +12,19 @@ function Ring({ missed }) {
 }
 
 export default function App() {
-  const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
-  const [caught, setCaught] = useState(0);
-  const [total, setTotal] = useState(0);
   const [circled, setCircled] = useState(new Set());
   const [sourceChecks, setSourceChecks] = useState(0);
   const [bubble, setBubble] = useState({ text: SOURCE_PROMPT, src: false });
   const [result, setResult] = useState(null); // { got, lies, oops, pts }
   const [showResult, setShowResult] = useState(false);
-  const [finished, setFinished] = useState(false);
 
   const truthRef = useRef(null);
   useEffect(() => {
     if (result) truthRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [result]);
 
-  const c = CASES[idx];
+  const c = CASES[0];
   const lieCount = c.lines.filter((l) => l.lie).length;
   const done = result !== null;
 
@@ -50,27 +46,15 @@ export default function App() {
       if (!l.lie && circled.has(i)) oops++;
     });
     const pts = got * 100 - oops * 50;
-    setScore((s) => Math.max(0, s + pts));
-    setCaught((n) => n + got);
-    setTotal((n) => n + lieCount);
+    setScore(Math.max(0, pts));
     setResult({ got, lies: lieCount, oops, pts });
     setShowResult(true);
   }
 
-  function next() {
-    if (idx + 1 >= CASES.length) return setFinished(true);
-    setIdx(idx + 1);
-    setCircled(new Set());
-    setSourceChecks(0);
-    setBubble({ text: SOURCE_PROMPT, src: false });
-    setResult(null);
-    setShowResult(false);
-  }
-
   function restart() {
-    setIdx(0); setScore(0); setCaught(0); setTotal(0);
+    setScore(0);
     setCircled(new Set()); setSourceChecks(0); setBubble({ text: SOURCE_PROMPT, src: false });
-    setResult(null); setShowResult(false); setFinished(false);
+    setResult(null); setShowResult(false);
   }
 
   return (
@@ -78,108 +62,100 @@ export default function App() {
       <header>
         <h1 className="brand">Catch the Lie</h1>
         <div className="stats">
-          <div className="pill">Case {idx + 1} / {CASES.length}</div>
+          <div className="pill">Example 1 / 1</div>
           <div className="pill">Score {score}</div>
+          <button className="btn dark" onClick={restart}>Reset</button>
         </div>
       </header>
 
-      {finished ? (
-        <section className="end">
-          <h2>Case closed!</h2>
-          <p>You caught <b>{caught} of {total}</b> lies. Score: <b>{score}</b>.</p>
-          <p>Professor Pixel always sounded sure. Sounding sure is not the same as being right.</p>
-          <button className="btn dark" onClick={restart}>Play again</button>
-        </section>
-      ) : (
-        <>
-          <main className="game">
-            <aside className="witness">
-              <h2 className="evidence-title">Source check</h2>
-              <div className={"bubble" + (bubble.src ? " src" : "")}>{bubble.text}</div>
-              <div className="asks">
-                <p>{sourceChecks === 0 ? "Compare the claim with reliable evidence." : `Sources checked: ${sourceChecks}`}</p>
-                <button className="ask" disabled={done} onClick={lookAtSources}>
-                  Look at more sources
-                </button>
-              </div>
-            </aside>
+      <>
+        <main className="game">
+          <aside className="witness">
+            <h2 className="evidence-title">Source check</h2>
+            <div className={"bubble" + (bubble.src ? " src" : "")}>{bubble.text}</div>
+            <div className="asks">
+              <p>{sourceChecks === 0 ? "Compare the claim with reliable evidence." : `Sources checked: ${sourceChecks}`}</p>
+              <button className="ask" disabled={done} onClick={lookAtSources}>
+                Look at more sources
+              </button>
+            </div>
+          </aside>
 
-            <section className="pad" aria-live="polite">
-              <div className="pad-head">
-                <h2>{c.title}</h2>
-                <div className="goal">{lieCount === 1 ? "Find 1 lie" : `Find ${lieCount} lies`}</div>
-              </div>
-              <ol className={"lines" + (done ? " done" : "")}>
-                {c.lines.map((l, i) => {
-                  const isCircled = circled.has(i);
-                  const isLie = done && l.lie;
-                  const isOops = done && !l.lie && isCircled;
-                  return (
-                    <li
-                      key={i}
-                      className={"line" + (isLie ? " lie" : "") + (isOops ? " oops" : "")}
-                      tabIndex={0}
-                      role="button"
-                      aria-pressed={isCircled}
-                      onClick={() => toggle(i)}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(i); } }}
-                    >
-                      <span className="num">{i + 1}</span>
-                      <span className="txt">
-                        {l.t}
-                        {isCircled && <Ring />}
-                        {isLie && !isCircled && <Ring missed />}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ol>
-              <div className="bar">
-                <p>
-                  {done
-                    ? `${result.got === result.lies ? "Lie detected!" : "Not quite."} You caught ${result.got} of ${result.lies}. ${result.pts >= 0 ? "+" : ""}${result.pts} points.`
-                    : "Circle the statement you think is the lie."}
-                </p>
-                {done ? (
-                  <button className="btn dark" onClick={next}>{idx + 1 < CASES.length ? "Next case" : "Finish"}</button>
-                ) : (
-                  <button className="btn" disabled={circled.size === 0} onClick={check}>Check</button>
-                )}
-              </div>
-            </section>
-          </main>
+          <section className="pad" aria-live="polite">
+            <div className="pad-head">
+              <h2>{c.title}</h2>
+              <div className="goal">{lieCount === 1 ? "Find 1 lie" : `Find ${lieCount} lies`}</div>
+            </div>
+            <ol className={"lines" + (done ? " done" : "")}>
+              {c.lines.map((l, i) => {
+                const isCircled = circled.has(i);
+                const isLie = done && l.lie;
+                const isOops = done && !l.lie && isCircled;
+                return (
+                  <li
+                    key={i}
+                    className={"line" + (isLie ? " lie" : "") + (isOops ? " oops" : "")}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={isCircled}
+                    onClick={() => toggle(i)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(i); } }}
+                  >
+                    <span className="num">{i + 1}</span>
+                    <span className="txt">
+                      {l.t}
+                      {isCircled && <Ring />}
+                      {isLie && !isCircled && <Ring missed />}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+            <div className="bar">
+              <p>
+                {done
+                  ? `${result.got === result.lies ? "Lie detected!" : "Not quite."} You caught ${result.got} of ${result.lies}. ${result.pts >= 0 ? "+" : ""}${result.pts} points.`
+                  : "Circle the statement you think is the lie."}
+              </p>
+              {done ? (
+                <button className="btn dark" onClick={restart}>Reset</button>
+              ) : (
+                <button className="btn" disabled={circled.size === 0} onClick={check}>Check</button>
+              )}
+            </div>
+          </section>
+        </main>
 
-          {done && (
-            <section className="truth" ref={truthRef}>
-              <h2>{result.got === result.lies ? "Lie detected!" : "Here's the truth:"}</h2>
+        {done && (
+          <section className="truth" ref={truthRef}>
+            <h2>{result.got === result.lies ? "Lie detected!" : "Here's the truth:"}</h2>
+            {c.lines.filter((l) => l.lie).map((l, i) => (
+              <div className="fact" key={i}>
+                <p className="statement">{l.truth}</p>
+                <p className="how"><b>How we know:</b> {l.lie}</p>
+              </div>
+            ))}
+            {result.oops > 0 && <p className="note">You circled a true statement, so that choice cost 50 points.</p>}
+          </section>
+        )}
+
+        {showResult && (
+          <div className="modal-backdrop" role="presentation">
+            <section className="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
+              <h2 id="result-title">{result.got === result.lies ? "Lie detected!" : "Not quite."}</h2>
+              <p className="result-score">You caught {result.got} of {result.lies} lies.</p>
               {c.lines.filter((l) => l.lie).map((l, i) => (
-                <div className="fact" key={i}>
-                  <p className="statement">{l.truth}</p>
-                  <p className="how"><b>How we know:</b> {l.lie}</p>
+                <div className="result-explanation" key={i}>
+                  <p><b>This is a lie because</b> {l.lie}</p>
+                  <p className="correct-note"><b>The other {c.lines.filter((line) => !line.lie).length} statements are correct because</b> they match the available historical evidence.</p>
                 </div>
               ))}
-              {result.oops > 0 && <p className="note">You circled a true statement, so that choice cost 50 points.</p>}
+              {result.oops > 0 && <p className="result-warning">One of your circles was on a true statement.</p>}
+              <button className="btn dark" onClick={() => setShowResult(false)}>See the case explanation</button>
             </section>
-          )}
-
-          {showResult && (
-            <div className="modal-backdrop" role="presentation">
-              <section className="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
-                <h2 id="result-title">{result.got === result.lies ? "Lie detected!" : "Not quite."}</h2>
-                <p className="result-score">You caught {result.got} of {result.lies} lies.</p>
-                {c.lines.filter((l) => l.lie).map((l, i) => (
-                  <div className="result-explanation" key={i}>
-                    <p><b>This is a lie because</b> {l.lie}</p>
-                    <p className="correct-note"><b>The other {c.lines.filter((line) => !line.lie).length} statements are correct because</b> they match the available historical evidence.</p>
-                  </div>
-                ))}
-                {result.oops > 0 && <p className="result-warning">One of your circles was on a true statement.</p>}
-                <button className="btn dark" onClick={() => setShowResult(false)}>See the case explanation</button>
-              </section>
-            </div>
-          )}
-        </>
-      )}
+          </div>
+        )}
+      </>
     </div>
   );
 }
