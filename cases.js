@@ -13,7 +13,11 @@ export const CASES = [
     answers: {
       source: "A very reliable website. Trust me.",
       reason: "They're both ancient Egypt, so they must be close in time.",
-      check: "Pyramid: about 2560 BCE. Cleopatra: born 69 BCE. Moon landing: 1969."
+      check: "The Great Pyramid of Giza was finished around 2550 BCE, during the reign of Khufu. Cleopatra VII, the famous last queen of Egypt, was born in 69 BCE, roughly 2,500 years after the pyramid was built. The Apollo 11 Moon landing happened in 1969 CE, about 2,000 years after Cleopatra was born.",
+      cite: [
+        { label: "Encyclopaedia Britannica: Pyramids of Giza", url: "https://www.britannica.com/topic/Pyramids-of-Giza" },
+        { label: "Encyclopaedia Britannica: Cleopatra", url: "https://www.britannica.com/biography/Cleopatra-queen-of-Egypt" }
+      ]
     }
   }
 ];
