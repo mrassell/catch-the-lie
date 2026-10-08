@@ -11,9 +11,9 @@ npm install
 npm run dev
 ```
 
-## Edit the cases
+## Edit the example
 
-All cases live in `src/cases.js`. Add a `lie` field to any line that should be caught.
+The example lives in `cases.js`. Add a `lie` field to any line that should be caught.
 
 ## Deploy
 
