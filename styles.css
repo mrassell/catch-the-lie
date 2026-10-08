@@ -47,6 +47,9 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .feedback.bad .primary { background: var(--red); border-bottom-color: var(--red-dark); }
 .feedback .primary { margin-top: 8px; }
 
+.sources { position: relative; padding-right: 44px; }
+.sources .close { position: absolute; top: 8px; right: 10px; width: 28px; height: 28px; padding: 0; background: none; border: 0; border-radius: 50%; color: inherit; font-size: 24px; line-height: 1; font-weight: 800; }
+.sources .close:hover { background: rgba(28,176,246,.18); }
 .sources p { margin: 0; }
 .sources .cite { margin-top: 10px; font-size: 15px; }
 .sources a { color: inherit; text-decoration: underline; }

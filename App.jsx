@@ -46,6 +46,7 @@ export default function App() {
 
       {showSources ? (
         <div className="sources">
+          <button className="close" aria-label="Close sources" onClick={() => setShowSources(false)}>×</button>
           <p>{c.answers.check}</p>
           <p className="cite">
             Sources:{" "}
