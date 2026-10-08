@@ -60,8 +60,7 @@ export const CASES = [
     lines: [
       { t: "The Vikings came from Scandinavia." },
       { t: "Viking warriors wore horned helmets.", truth: "Vikings did NOT wear horned helmets.", lie: "No horned battle helmet has ever been found. That look came from 1800s costumes." },
-      { t: "Leif Erikson reached North America around 1000." },
-      { t: "Vikings only raided and never traded.", truth: "Vikings were also farmers and traders, not just raiders.", lie: "One-sided. Vikings also farmed and traded as far as Baghdad." }
+      { t: "Leif Erikson reached North America around 1000." }
     ],
     answers: {
       source: "Movies and Halloween costumes.",

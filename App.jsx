@@ -20,6 +20,7 @@ export default function App() {
   const [sourceChecks, setSourceChecks] = useState(0);
   const [bubble, setBubble] = useState({ text: SOURCE_PROMPT, src: false });
   const [result, setResult] = useState(null); // { got, lies, oops, pts }
+  const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
 
   const truthRef = useRef(null);
@@ -33,9 +34,7 @@ export default function App() {
 
   function toggle(i) {
     if (done) return;
-    const next = new Set(circled);
-    next.has(i) ? next.delete(i) : next.add(i);
-    setCircled(next);
+    setCircled(circled.has(i) ? new Set() : new Set([i]));
   }
 
   function lookAtSources() {
@@ -55,6 +54,7 @@ export default function App() {
     setCaught((n) => n + got);
     setTotal((n) => n + lieCount);
     setResult({ got, lies: lieCount, oops, pts });
+    setShowResult(true);
   }
 
   function next() {
@@ -64,12 +64,13 @@ export default function App() {
     setSourceChecks(0);
     setBubble({ text: SOURCE_PROMPT, src: false });
     setResult(null);
+    setShowResult(false);
   }
 
   function restart() {
     setIdx(0); setScore(0); setCaught(0); setTotal(0);
     setCircled(new Set()); setSourceChecks(0); setBubble({ text: SOURCE_PROMPT, src: false });
-    setResult(null); setFinished(false);
+    setResult(null); setShowResult(false); setFinished(false);
   }
 
   return (
@@ -136,7 +137,7 @@ export default function App() {
               <div className="bar">
                 <p>
                   {done
-                    ? `Lie detected! You caught ${result.got} of ${result.lies}. ${result.pts >= 0 ? "+" : ""}${result.pts} points.`
+                    ? `${result.got === result.lies ? "Lie detected!" : "Not quite."} You caught ${result.got} of ${result.lies}. ${result.pts >= 0 ? "+" : ""}${result.pts} points.`
                     : "Circle the statement you think is the lie."}
                 </p>
                 {done ? (
@@ -150,7 +151,7 @@ export default function App() {
 
           {done && (
             <section className="truth" ref={truthRef}>
-              <h2>Lie detected! Here's the truth:</h2>
+              <h2>{result.got === result.lies ? "Lie detected!" : "Here's the truth:"}</h2>
               {c.lines.filter((l) => l.lie).map((l, i) => (
                 <div className="fact" key={i}>
                   <p className="statement">{l.truth}</p>
@@ -159,6 +160,23 @@ export default function App() {
               ))}
               {result.oops > 0 && <p className="note">You circled a true statement, so that choice cost 50 points.</p>}
             </section>
+          )}
+
+          {showResult && (
+            <div className="modal-backdrop" role="presentation">
+              <section className="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title">
+                <h2 id="result-title">{result.got === result.lies ? "Lie detected!" : "Not quite."}</h2>
+                <p className="result-score">You caught {result.got} of {result.lies} lies.</p>
+                {c.lines.filter((l) => l.lie).map((l, i) => (
+                  <div className="result-explanation" key={i}>
+                    <p><b>This is a lie because</b> {l.lie}</p>
+                    <p className="correct-note"><b>The other {c.lines.filter((line) => !line.lie).length} statements are correct because</b> they match the available historical evidence.</p>
+                  </div>
+                ))}
+                {result.oops > 0 && <p className="result-warning">One of your circles was on a true statement.</p>}
+                <button className="btn dark" onClick={() => setShowResult(false)}>See the case explanation</button>
+              </section>
+            </div>
           )}
         </>
       )}

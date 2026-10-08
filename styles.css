@@ -79,3 +79,13 @@ button:focus-visible, .line:focus-visible { outline: 3px solid #f2c94c; outline-
 .end { background: var(--pad); border-radius: 14px; padding: 28px; display: grid; gap: 14px; text-align: center; justify-items: center; }
 .end h2 { margin: 0; font-size: clamp(26px, 5vw, 36px); }
 .end p { margin: 0; font-size: 19px; line-height: 1.5; max-width: 46ch; }
+
+.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(27,36,64,.52); }
+.result-modal { width: min(560px, 100%); max-height: min(720px, 90vh); overflow-y: auto; background: #fffdf0; border: 4px solid var(--red); border-radius: 16px; padding: 24px; box-shadow: 0 18px 50px rgba(27,36,64,.28); }
+.result-modal h2 { margin: 0 0 8px; color: var(--red); font-size: clamp(28px, 5vw, 40px); }
+.result-score { margin: 0 0 18px; font-weight: 700; }
+.result-explanation { display: grid; gap: 8px; padding: 14px 0; border-top: 2px solid #e6dc9a; }
+.result-explanation p { margin: 0; line-height: 1.45; }
+.correct-note { color: var(--soft); }
+.result-warning { margin: 16px 0; color: var(--red); font-weight: 700; }
+.result-modal .btn { margin-top: 18px; }
