@@ -7,7 +7,7 @@ export const CASES = [
     title: "The Great Pyramid",
     lines: [
       { t: "The Great Pyramid was built for the pharaoh Khufu." },
-      { t: "It is more than 4,500 years old." },
+      { t: "The Great Pyramid of Giza is more than 4,500 years old." },
       { t: "Cleopatra lived closer to the pyramid than to the Moon landing.", truth: "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.", lie: "Cleopatra lived about 2,500 years after the pyramid and about 2,000 years before the Moon landing." }
     ],
     answers: {
