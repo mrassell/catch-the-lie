@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DEMO } from "./cases.js";
 import { extractText } from "./extract.js";
+import { ENGINES, OLLAMA_DEFAULT, generate as runAI } from "./ai.js";
 
 const STORE = "ctl-case-v1";
 function loadSaved() {
@@ -44,7 +45,12 @@ function Teacher({ onBack, onReady }) {
   const [err, setErr] = useState("");
   const [result, setResult] = useState(null);
   const [drag, setDrag] = useState(false);
+  const [engine, setEngine] = useState(() => { try { return localStorage.getItem("ctl-engine") || "browser"; } catch { return "browser"; } });
+  const [ollamaModel, setOllamaModel] = useState(OLLAMA_DEFAULT);
+  const [progress, setProgress] = useState(null);
   const inputRef = useRef(null);
+
+  function pickEngine(id) { setEngine(id); setErr(""); try { localStorage.setItem("ctl-engine", id); } catch {} }
 
   async function handleFile(f) {
     if (!f) return;
@@ -54,13 +60,12 @@ function Teacher({ onBack, onReady }) {
   }
 
   async function generate() {
-    setErr(""); setStatus("generating");
+    setErr(""); setStatus("generating"); setProgress(null);
     try {
-      const r = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-      const data = await r.json().catch(() => ({ error: `Server error (${r.status})` }));
-      if (!r.ok) throw new Error(data.error || "Something went wrong.");
+      const data = await runAI(engine, text, { model: ollamaModel, onProgress: (msg, pct) => setProgress({ msg, pct }) });
       setResult(data); setStatus("review");
     } catch (e) { setErr(e.message); setStatus("idle"); }
+    setProgress(null);
   }
 
   function removeQ(i) {
@@ -126,7 +131,39 @@ function Teacher({ onBack, onReady }) {
         <span className="tiny">{text.length.toLocaleString()} characters</span>
       </label>
 
+      <div className="card">
+        <span className="kicker">Which free AI?</span>
+        <div className="engines">
+          {ENGINES.map((e) => (
+            <button key={e.id} className={"engine" + (engine === e.id ? " on" : "")} onClick={() => pickEngine(e.id)}>{e.name}</button>
+          ))}
+        </div>
+        <p className="tiny">{ENGINES.find((e) => e.id === engine).note}</p>
+        {engine === "ollama" && (
+          <div className="setup">
+            <label className="tiny">Model <input value={ollamaModel} onChange={(e) => setOllamaModel(e.target.value)} /></label>
+            <details>
+              <summary>First-time Ollama setup</summary>
+              <ol>
+                <li>Install Ollama from ollama.com</li>
+                <li>In Terminal: <code>ollama pull {ollamaModel}</code></li>
+                <li>Quit the Ollama app, then let this site talk to it: <code>OLLAMA_ORIGINS="{location.origin}" ollama serve</code></li>
+              </ol>
+              <p className="tiny">Works in Chrome, Edge and Firefox (allow "local network" if asked). Safari blocks it.</p>
+            </details>
+          </div>
+        )}
+      </div>
+
       {err && <div className="card red-bg">{err}</div>}
+
+      {status === "generating" && progress && (
+        <div className="card blue-bg">
+          <span className="kicker">{progress.pct < 1 ? "Downloading the AI (one time)" : "Thinking"}</span>
+          <div className="progress"><i style={{ width: `${Math.round((progress.pct || 0) * 100)}%` }} /></div>
+          <p className="tiny">{progress.msg}</p>
+        </div>
+      )}
 
       <button className="btn green" disabled={text.trim().length < 80 || status !== "idle"} onClick={generate}>
         {status === "generating" ? "Writing your case…" : "Generate 3 questions"}

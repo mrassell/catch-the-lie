@@ -6,15 +6,13 @@ Built for T-566 Learning Design for All (HGSE).
 
 ## Teacher portal
 
-Teachers upload slides (.pptx or .pdf) or paste lesson text. A free model on OpenRouter writes 3 questions from the lesson. The teacher reviews them, removes any bad ones, then starts the game. Slide text is extracted in the browser and only the text is sent to the model.
+Teachers upload slides (.pptx or .pdf) or paste lesson text, pick a free AI, and get 3 questions. They review them, remove any bad ones, then start the game. Slide text is extracted in the browser.
 
-### Setup (one time)
+No API key is needed. Three free options:
 
-1. Get a free key at https://openrouter.ai/keys
-2. In Vercel: Project > Settings > Environment Variables, add `OPENROUTER_API_KEY`
-3. Redeploy
-
-The server picks a free DeepSeek or Kimi model first, then falls back to other free models. To force one, set `OPENROUTER_MODEL` (for example a `:free` model id).
+- **In this browser** runs Qwen2.5 3B locally with WebLLM. First run downloads about 2 GB, then it is cached. Needs Chrome or Edge with WebGPU. Lesson text never leaves the computer.
+- **Ollama** uses a model running on the teacher's computer. One-time setup: install Ollama, `ollama pull llama3.2`, quit the Ollama app, then run `OLLAMA_ORIGINS="https://catch-the-lie.vercel.app" ollama serve`.
+- **Free cloud** calls `/api/generate`, which uses Pollinations' free anonymous API. If `OPENROUTER_API_KEY` is set in Vercel it tries free OpenRouter models (DeepSeek, Kimi) first.
 
 ## Run locally
 
@@ -26,6 +24,8 @@ npx vercel dev   # runs the app and /api/generate together
 ## Files
 
 - `App.jsx` home, teacher portal and game
-- `api/generate.js` serverless function that calls the model
+- `ai.js` the three AI options
+- `prompt.js` the instructions the AI gets, shared by browser and server
+- `api/generate.js` serverless function for the free cloud option
 - `extract.js` pulls text out of .pptx and .pdf files
 - `cases.js` the Ancient Egypt demo case

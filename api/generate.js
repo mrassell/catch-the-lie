@@ -1,6 +1,8 @@
+import { SYSTEM, cleanLesson, userMessage, parseCase } from "../prompt.js";
+
 // Vercel serverless function: turns a teacher's slide text into 3 "catch the lie" questions.
-// Uses a free model on OpenRouter. Set OPENROUTER_API_KEY in Vercel (Settings > Environment Variables).
-// Optional: OPENROUTER_MODEL to force a specific model id.
+// No key needed: uses Pollinations' free anonymous API.
+// Optional: set OPENROUTER_API_KEY in Vercel to use free OpenRouter models (DeepSeek, Kimi) first.
 
 const PREFERRED = [/deepseek/i, /kimi|moonshot/i, /qwen/i, /llama/i, /glm/i];
 
@@ -24,64 +26,48 @@ async function pickFreeModels(key) {
   }
 }
 
-const SYSTEM = `You write a classroom game for 6th graders called "Catch the Lie".
-An overconfident AI witness explains the teacher's lesson. Each question shows 3 short statements about the lesson.
-Exactly ONE statement is false. The other two are true and come straight from the lesson.
-The false one should be a realistic AI-style mistake: a wrong date or number, a mixed-up cause, an overgeneralization, a made-up "fact", or missing context. It must be clearly wrong based on the lesson, not a trick.
-Rules:
-- Every statement is one sentence, under 20 words, at a 6th grade reading level.
-- "truth" restates the correct fact plainly so it is the last thing students read. Never repeat the false claim in it.
-- "why" is one short sentence on how we know, pointing to the lesson.
-- "source" is a short, honest pointer to where in the lesson this is covered.
-- Only use facts that appear in the lesson text. Do not invent facts.
-- The 3 questions should cover different parts of the lesson. Vary the position of the false statement.
-Return ONLY JSON in this shape, no markdown:
-{"title":"short lesson title","questions":[{"lines":["statement","statement","statement"],"lie":0,"truth":"...","why":"...","source":"..."}]}`;
-
-function parse(text) {
-  const s = text.indexOf("{"), e = text.lastIndexOf("}");
-  if (s < 0 || e < 0) throw new Error("no JSON");
-  const j = JSON.parse(text.slice(s, e + 1));
-  const qs = (j.questions || [])
-    .filter((q) => Array.isArray(q.lines) && q.lines.length >= 3 && Number.isInteger(q.lie) && q.lie >= 0 && q.lie < q.lines.length && q.truth)
-    .slice(0, 3)
-    .map((q) => ({ lines: q.lines.slice(0, 4).map(String), lie: q.lie, truth: String(q.truth), why: String(q.why || ""), source: String(q.source || "") }));
-  if (qs.length < 1) throw new Error("no usable questions");
-  return { title: String(j.title || "Your lesson"), questions: qs };
-}
-
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
-  const key = process.env.OPENROUTER_API_KEY;
-  if (!key) return res.status(500).json({ error: "The server is missing OPENROUTER_API_KEY. Add it in Vercel project settings and redeploy." });
-
-  const { text = "", grade = "6th grade" } = req.body || {};
-  const lesson = String(text).replace(/\s+/g, " ").trim().slice(0, 24000);
-  if (lesson.length < 80) return res.status(400).json({ error: "Not enough lesson text. Upload slides with text or paste a few paragraphs." });
-
+async function viaOpenRouter(key, messages) {
   const models = await pickFreeModels(key);
-  let lastErr = "No free model answered.";
+  let lastErr = "no free model answered";
   for (const model of models) {
     try {
       const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "X-Title": "Catch the Lie" },
-        body: JSON.stringify({
-          model,
-          temperature: 0.6,
-          messages: [
-            { role: "system", content: SYSTEM },
-            { role: "user", content: `Audience: ${grade} students.\n\nLESSON TEXT:\n${lesson}` }
-          ]
-        })
+        body: JSON.stringify({ model, temperature: 0.6, messages })
       });
       const data = await r.json();
       if (!r.ok) { lastErr = data?.error?.message || `HTTP ${r.status}`; continue; }
-      const out = parse(data.choices?.[0]?.message?.content || "");
-      return res.status(200).json({ ...out, model });
-    } catch (e) {
-      lastErr = e.message;
-    }
+      return { ...parseCase(data.choices?.[0]?.message?.content || ""), model };
+    } catch (e) { lastErr = e.message; }
   }
-  return res.status(502).json({ error: `Couldn't generate questions: ${lastErr}` });
+  throw new Error(lastErr);
+}
+
+async function viaPollinations(messages) {
+  const r = await fetch("https://text.pollinations.ai/openai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "openai", messages })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
+  return { ...parseCase(data.choices?.[0]?.message?.content || ""), model: "Pollinations (free)" };
+}
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+  const lesson = cleanLesson(req.body?.text);
+  if (lesson.length < 80) return res.status(400).json({ error: "Not enough lesson text. Upload slides with text or paste a few paragraphs." });
+  const messages = [{ role: "system", content: SYSTEM }, { role: "user", content: userMessage(lesson) }];
+
+  const errors = [];
+  const key = process.env.OPENROUTER_API_KEY;
+  if (key) {
+    try { return res.status(200).json(await viaOpenRouter(key, messages)); } catch (e) { errors.push(`OpenRouter: ${e.message}`); }
+  }
+  for (let i = 0; i < 2; i++) {
+    try { return res.status(200).json(await viaPollinations(messages)); } catch (e) { if (i) errors.push(`Pollinations: ${e.message}`); }
+  }
+  return res.status(502).json({ error: `The free cloud AI is busy right now. Try "In this browser" or "Ollama" instead. (${errors.join("; ")})` });
 }
