@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.85",
     "jszip": "^3.10.2",
     "pdfjs-dist": "^4.10.38",
     "react": "^18.3.1",

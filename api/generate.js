@@ -1,8 +1,8 @@
 import { SYSTEM, cleanLesson, userMessage, parseCase } from "../prompt.js";
 
 // Vercel serverless function: turns a teacher's slide text into 3 "catch the lie" questions.
-// No key needed: uses Pollinations' free anonymous API.
-// Optional: set OPENROUTER_API_KEY in Vercel to use free OpenRouter models (DeepSeek, Kimi) first.
+// Uses free OpenRouter models (DeepSeek and Kimi first). Set OPENROUTER_API_KEY in Vercel.
+// Optional: OPENROUTER_MODEL to force a specific model id.
 
 const PREFERRED = [/deepseek/i, /kimi|moonshot/i, /qwen/i, /llama/i, /glm/i];
 
@@ -44,30 +44,17 @@ async function viaOpenRouter(key, messages) {
   throw new Error(lastErr);
 }
 
-async function viaPollinations(messages) {
-  const r = await fetch("https://text.pollinations.ai/openai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "openai", messages })
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data?.error || `HTTP ${r.status}`);
-  return { ...parseCase(data.choices?.[0]?.message?.content || ""), model: "Pollinations (free)" };
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
   const lesson = cleanLesson(req.body?.text);
   if (lesson.length < 80) return res.status(400).json({ error: "Not enough lesson text. Upload slides with text or paste a few paragraphs." });
   const messages = [{ role: "system", content: SYSTEM }, { role: "user", content: userMessage(lesson) }];
 
-  const errors = [];
   const key = process.env.OPENROUTER_API_KEY;
-  if (key) {
-    try { return res.status(200).json(await viaOpenRouter(key, messages)); } catch (e) { errors.push(`OpenRouter: ${e.message}`); }
+  if (!key) return res.status(500).json({ error: "The AI isn't set up yet. Add OPENROUTER_API_KEY in Vercel settings and redeploy." });
+  try {
+    return res.status(200).json(await viaOpenRouter(key, messages));
+  } catch (e) {
+    return res.status(502).json({ error: `The free AI is busy right now. Wait a minute and try again. (${e.message})` });
   }
-  for (let i = 0; i < 2; i++) {
-    try { return res.status(200).json(await viaPollinations(messages)); } catch (e) { if (i) errors.push(`Pollinations: ${e.message}`); }
-  }
-  return res.status(502).json({ error: `The free cloud AI is busy right now. Try "In this browser" or "Ollama" instead. (${errors.join("; ")})` });
 }

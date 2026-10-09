@@ -8,11 +8,15 @@ Built for T-566 Learning Design for All (HGSE).
 
 Teachers upload slides (.pptx or .pdf) or paste lesson text, pick a free AI, and get 3 questions. They review them, remove any bad ones, then start the game. Slide text is extracted in the browser.
 
-No API key is needed. Three free options:
+It uses free OpenRouter models (DeepSeek and Kimi first, then other free ones).
 
-- **In this browser** runs Qwen2.5 3B locally with WebLLM. First run downloads about 2 GB, then it is cached. Needs Chrome or Edge with WebGPU. Lesson text never leaves the computer.
-- **Ollama** uses a model running on the teacher's computer. One-time setup: install Ollama, `ollama pull llama3.2`, quit the Ollama app, then run `OLLAMA_ORIGINS="https://catch-the-lie.vercel.app" ollama serve`.
-- **Free cloud** calls `/api/generate`, which uses Pollinations' free anonymous API. If `OPENROUTER_API_KEY` is set in Vercel it tries free OpenRouter models (DeepSeek, Kimi) first.
+### Setup (one time)
+
+1. Get a key at https://openrouter.ai/keys
+2. In Vercel: Project > Settings > Environment Variables, add `OPENROUTER_API_KEY` as a Secret
+3. Redeploy
+
+Never put the key in the code. This repo is public.
 
 ## Run locally
 
@@ -24,8 +28,8 @@ npx vercel dev   # runs the app and /api/generate together
 ## Files
 
 - `App.jsx` home, teacher portal and game
-- `ai.js` the three AI options
+- `ai.js` calls the server
 - `prompt.js` the instructions the AI gets, shared by browser and server
-- `api/generate.js` serverless function for the free cloud option
+- `api/generate.js` serverless function that calls OpenRouter
 - `extract.js` pulls text out of .pptx and .pdf files
 - `cases.js` the Ancient Egypt demo case
