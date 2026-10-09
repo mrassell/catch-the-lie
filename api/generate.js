@@ -26,7 +26,7 @@ async function pickFreeModels(key) {
   }
 }
 
-async function viaOpenRouter(key, messages) {
+async function viaOpenRouter(key, messages, lesson) {
   const models = await pickFreeModels(key);
   let lastErr = "no free model answered";
   for (const model of models) {
@@ -38,7 +38,7 @@ async function viaOpenRouter(key, messages) {
       });
       const data = await r.json();
       if (!r.ok) { lastErr = data?.error?.message || `HTTP ${r.status}`; continue; }
-      return { ...parseCase(data.choices?.[0]?.message?.content || ""), model };
+      return { ...parseCase(data.choices?.[0]?.message?.content || "", lesson), model };
     } catch (e) { lastErr = e.message; }
   }
   throw new Error(lastErr);
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) return res.status(500).json({ error: "The AI isn't set up yet. Add OPENROUTER_API_KEY in Vercel settings and redeploy." });
   try {
-    return res.status(200).json(await viaOpenRouter(key, messages));
+    return res.status(200).json(await viaOpenRouter(key, messages, lesson));
   } catch (e) {
     return res.status(502).json({ error: `The free AI is busy right now. Wait a minute and try again. (${e.message})` });
   }

@@ -10,7 +10,9 @@ async function fromPptx(file) {
   for (const n of slides) {
     const xml = await zip.files[n].async("string");
     const text = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => m[1]).join(" ");
-    if (text.trim()) parts.push(text);
+    const num = n.match(/(\d+)\.xml$/)[1];
+    const label = n.includes("notes") ? `[Slide ${num} notes]` : `[Slide ${num}]`;
+    if (text.trim()) parts.push(`${label} ${text}`);
   }
   return parts.join("\n");
 }
@@ -24,7 +26,8 @@ async function fromPdf(file) {
   for (let p = 1; p <= Math.min(doc.numPages, 60); p++) {
     const page = await doc.getPage(p);
     const c = await page.getTextContent();
-    parts.push(c.items.map((i) => i.str).join(" "));
+    const t = c.items.map((i) => i.str).join(" ");
+    if (t.trim()) parts.push(`[Slide ${p}] ${t}`);
   }
   return parts.join("\n");
 }

@@ -88,6 +88,7 @@ function Teacher({ onBack, onReady }) {
               {q.lines.map((l, j) => <li key={j} className={j === q.lie ? "is-lie" : ""}>{j === q.lie && <span className="badge">LIE</span>}{l}</li>)}
             </ol>
             <p className="truthline">✓ {q.truth}</p>
+            <p className="tiny">{q.evidence?.length ? `Evidence board: ${q.evidence.length} quotes from your slides` : "No evidence board for this one (the AI's quotes didn't match your slides exactly)"}</p>
           </div>
         ))}
         <div className="row gap">
@@ -185,7 +186,7 @@ function Game({ data, onHome }) {
         <div className="bot" aria-hidden="true">
           <svg viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="40" fill="#fff" stroke="#000" strokeWidth="4" /><rect x="18" y="24" width="8" height="8" fill="#000" /><rect x="38" y="24" width="8" height="8" fill="#000" /><rect x="22" y="40" width="20" height="4" fill="#000" /><rect x="30" y="2" width="4" height="10" fill="#000" /></svg>
         </div>
-        <div className="bubble"><span className="kicker">AI witness · {data.title}</span>One of these is a lie. Which one?</div>
+        <div className="bubble">One of these is a lie. Which one?</div>
       </div>
 
       <ul className="choices">
@@ -206,14 +207,23 @@ function Game({ data, onHome }) {
         })}
       </ul>
 
-      {!checked && (sources ? (
+      {!checked && q.evidence?.length > 0 && (sources ? (
         <div className="card blue-bg">
-          <div className="row"><span className="kicker">More sources</span><button className="chip" onClick={() => setSources(false)}>Close</button></div>
-          <p>{q.source || "Check your class notes and slides."}</p>
-          {q.cite?.length > 0 && <p className="tiny">{q.cite.map((c, i) => <span key={c.url}>{i > 0 && " · "}<a href={c.url} target="_blank" rel="noreferrer">{c.label}</a></span>)}</p>}
+          <div className="row"><span className="kicker">Evidence board</span><button className="chip" onClick={() => setSources(false)}>Close</button></div>
+          <p className="tiny">Compare each statement to the evidence. Which one doesn't match?</p>
+          <div className="evidence">
+            {q.evidence.map((e, i) => (
+              <figure key={i} className="clip">
+                <blockquote>{e.from ? e.quote : `“${e.quote}”`}</blockquote>
+                <figcaption>
+                  {e.url ? <a href={e.url} target="_blank" rel="noreferrer">{e.from}</a> : e.from || (e.slide ? `Your slides · Slide ${e.slide}` : "Your slides")}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
         </div>
       ) : (
-        <button className="link" onClick={() => setSources(true)}>🔍 Look at more sources</button>
+        <button className="link" onClick={() => setSources(true)}>🔍 Check the evidence</button>
       ))}
 
       {!checked ? (

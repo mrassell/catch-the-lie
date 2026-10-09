@@ -94,6 +94,13 @@ textarea { width: 100%; border: var(--b); padding: 12px; font: inherit; font-siz
 .badge { font-family: var(--head); font-size: 11px; background: var(--red); border: 2px solid var(--ink); padding: 1px 6px; margin-right: 8px; vertical-align: 2px; }
 .truthline { font-weight: 700; font-size: 16px; }
 
+.evidence { display: grid; gap: 12px; }
+.clip { margin: 0; background: #fff; border: 2px solid var(--ink); box-shadow: var(--sh-sm); padding: 12px 14px; display: grid; gap: 6px; }
+.clip:nth-child(2) { transform: rotate(.6deg); }
+.clip:nth-child(3) { transform: rotate(-.5deg); }
+.clip blockquote { margin: 0; font-size: 17px; font-weight: 600; }
+.clip figcaption { font-family: var(--head); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+
 /* Game */
 .witness { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; }
 .bot { width: 72px; height: 72px; border: var(--b); background: var(--blue); box-shadow: var(--sh-sm); padding: 6px; }
