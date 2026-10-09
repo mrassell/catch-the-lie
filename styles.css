@@ -114,9 +114,10 @@ textarea { width: 100%; border: var(--b); padding: 12px; font: inherit; font-siz
 .letter { width: 40px; height: 40px; display: grid; place-items: center; border: var(--b); font-family: var(--head); font-size: 18px; background: var(--paper); }
 .choice.picked { background: var(--yellow); transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--ink); }
 .choice.lie { background: var(--red-bg); }
-.choice.lie span:nth-child(2) { text-decoration: line-through; text-decoration-thickness: 3px; text-decoration-color: var(--red); }
 .choice.wrong { background: #eee; }
-.stamp { font-family: var(--head); font-size: 16px; color: #fff; background: var(--red); border: var(--b); padding: 2px 8px; transform: rotate(-8deg); }
+.tags { display: grid; gap: 6px; justify-items: end; }
+.stamp { font-family: var(--head); font-size: 14px; text-transform: uppercase; color: #fff; background: var(--red); border: var(--b); padding: 2px 8px; white-space: nowrap; }
+.stamp.you { background: var(--yellow); color: var(--ink); }
 .feedback { gap: 12px; }
 .truth { font-family: var(--head); font-size: clamp(22px, 4.5vw, 28px); line-height: 1.2; }
 .recap { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-weight: 700; }

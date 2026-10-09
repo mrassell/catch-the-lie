@@ -191,7 +191,12 @@ function Game({ data, onHome }) {
               <button className={"choice" + s} disabled={checked} onClick={() => setPicked(i)}>
                 <span className="letter">{"ABCD"[i]}</span>
                 <span>{l}</span>
-                {checked && i === q.lie && <span className="stamp">LIE</span>}
+                {checked && (i === q.lie || i === picked) && (
+                  <span className="tags">
+                    {i === q.lie && <span className="stamp">Lie</span>}
+                    {i === picked && <span className="stamp you">You picked</span>}
+                  </span>
+                )}
               </button>
             </li>
           );
