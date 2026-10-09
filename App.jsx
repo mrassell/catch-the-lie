@@ -3,16 +3,8 @@ import { DEMO } from "./cases.js";
 import { extractText } from "./extract.js";
 import { generate as runAI } from "./ai.js";
 
-const STORE = "ctl-case-v1";
-function loadSaved() {
-  try { return JSON.parse(localStorage.getItem(STORE)) || null; } catch { return null; }
-}
-function save(c) {
-  try { c ? localStorage.setItem(STORE, JSON.stringify(c)) : localStorage.removeItem(STORE); } catch {}
-}
-
 /* ---------- Home ---------- */
-function Home({ saved, onTeacher, onPlay }) {
+function Home({ onTeacher, onPlay }) {
   return (
     <div className="home">
       <div className="hero card yellow">
@@ -26,13 +18,12 @@ function Home({ saved, onTeacher, onPlay }) {
           <strong>Make a case from my slides</strong>
           <span className="arrow">→</span>
         </button>
-        <button className="card big blue" onClick={() => onPlay(saved || DEMO)}>
-          <span className="kicker">{saved ? "Your case" : "Demo"}</span>
-          <strong>{saved ? `Play: ${saved.title}` : "Play: Ancient Egypt"}</strong>
+        <button className="card big blue" onClick={() => onPlay(DEMO)}>
+          <span className="kicker">Demo</span>
+          <strong>Play: Ancient Egypt</strong>
           <span className="arrow">→</span>
         </button>
       </div>
-      {saved && <button className="link" onClick={() => onPlay(DEMO)}>Or play the Ancient Egypt demo</button>}
     </div>
   );
 }
@@ -252,13 +243,12 @@ function TopBar({ onBack, label, right }) {
 
 export default function App() {
   const [view, setView] = useState("home");
-  const [saved, setSaved] = useState(loadSaved);
   const [playing, setPlaying] = useState(null);
 
   return (
     <div className="wrap">
-      {view === "home" && <Home saved={saved} onTeacher={() => setView("teacher")} onPlay={(d) => { setPlaying(d); setView("game"); }} />}
-      {view === "teacher" && <Teacher onBack={() => setView("home")} onReady={(c) => { save(c); setSaved(c); setPlaying(c); setView("game"); }} />}
+      {view === "home" && <Home onTeacher={() => setView("teacher")} onPlay={(d) => { setPlaying(d); setView("game"); }} />}
+      {view === "teacher" && <Teacher onBack={() => setView("home")} onReady={(c) => { setPlaying(c); setView("game"); }} />}
       {view === "game" && playing && <Game key={playing.title + view} data={playing} onHome={() => setView("home")} />}
     </div>
   );
