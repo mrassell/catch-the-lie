@@ -226,7 +226,7 @@ function Game({ data, onHome }) {
         <button className="btn" disabled={picked === null} onClick={check}>Check</button>
       ) : (
         <div ref={fbRef} className={"card feedback " + (correct ? "green-bg" : "red-bg")}>
-          <span className="kicker">{correct ? "You caught it!" : "Not quite. Here's the truth:"}</span>
+          <span className="kicker">{correct ? "Lie caught!" : "Lie not caught!"}</span>
           <p className="truth">✓ {q.truth}</p>
           {q.why && <p className="muted"><b>How we know:</b> {q.why}</p>}
           <button className="btn" onClick={next}>{qi + 1 < data.questions.length ? "Next question" : "See results"}</button>
