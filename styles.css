@@ -55,3 +55,5 @@ button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .sources a { color: inherit; text-decoration: underline; }
 
 .tag { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--red); }
+
+.retry { background: var(--red-bg); color: var(--red-dark); border-radius: 16px; padding: 14px 18px; font-weight: 800; }
