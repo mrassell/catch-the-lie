@@ -1,6 +1,6 @@
 # Catch the Lie
 
-A classroom game for 6th graders. An AI "witness" explains the lesson in 3 statements. One is a lie. Students find it, then see the corrected fact (truth sandwich).
+A classroom game for 6th graders. An AI "witness" explains the lesson in 4 statements per question. One is a lie, and students get one retry. Students find it, then see the corrected fact (truth sandwich).
 
 Built for T-566 Learning Design for All (HGSE).
 

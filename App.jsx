@@ -97,7 +97,7 @@ function Teacher({ onBack, onReady }) {
       <div className="card pink">
         <span className="kicker">Teacher portal</span>
         <h2 className="title">Turn your slides into a case</h2>
-        <p>We'll write 3 questions. Each one has 2 true facts from your lesson and 1 AI-style mistake.</p>
+        <p>We'll write 3 questions. Each one has 4 statements: 3 true facts from your lesson and 1 AI-style mistake.</p>
       </div>
 
       <div
