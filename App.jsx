@@ -60,6 +60,24 @@ function Teacher({ onBack, onReady }) {
     setResult({ ...result, questions: qs });
   }
 
+  // The teacher has the final say: every field of every question can be changed.
+  function editQ(i, patch) {
+    setResult({ ...result, questions: result.questions.map((q, j) => (j === i ? { ...q, ...patch } : q)) });
+  }
+  function editLine(i, j, text) {
+    const q = result.questions[i];
+    editQ(i, { lines: q.lines.map((l, k) => (k === j ? text : l)) });
+  }
+  function editQuote(i, k, text) {
+    const q = result.questions[i];
+    editQ(i, { evidence: q.evidence.map((e, m) => (m === k ? { ...e, quote: text } : e)) });
+  }
+  function removeQuote(i, k) {
+    const q = result.questions[i];
+    editQ(i, { evidence: q.evidence.filter((_, m) => m !== k) });
+  }
+  const incomplete = result?.questions.some((q) => !q.truth.trim() || q.lines.some((l) => !l.trim()));
+
   if (status === "review" && result) {
     return (
       <div className="stack">
@@ -67,7 +85,7 @@ function Teacher({ onBack, onReady }) {
         <div className="card yellow">
           <span className="kicker">Review before class</span>
           <h2 className="title">{result.title}</h2>
-          <p className="muted">The lie in each question is marked. Remove anything that's wrong or off-topic.</p>
+          <p className="muted">You have the final say. Edit any text, and tap "This is the lie" to choose which statement is false.</p>
         </div>
         {result.questions.map((q, i) => (
           <div className="card" key={i}>
@@ -76,15 +94,42 @@ function Teacher({ onBack, onReady }) {
               <button className="chip" onClick={() => removeQ(i)}>Remove</button>
             </div>
             <ol className="review">
-              {q.lines.map((l, j) => <li key={j} className={j === q.lie ? "is-lie" : ""}>{j === q.lie && <span className="badge">LIE</span>}{l}</li>)}
+              {q.lines.map((l, j) => (
+                <li key={j} className={j === q.lie ? "is-lie" : ""}>
+                  <textarea className="edit" rows={2} value={l} aria-label={`Question ${i + 1}, statement ${j + 1}`} onChange={(e) => editLine(i, j, e.target.value)} />
+                  <button className={"chip pick" + (j === q.lie ? " on" : "")} aria-pressed={j === q.lie} onClick={() => editQ(i, { lie: j })}>
+                    {j === q.lie ? "✓ The lie" : "This is the lie"}
+                  </button>
+                </li>
+              ))}
             </ol>
-            <p className="truthline">✓ {q.truth}</p>
-            <p className="tiny">{q.evidence?.length ? `Evidence board: ${q.evidence.length} quotes from your slides` : "No evidence board for this one (the AI's quotes didn't match your slides exactly)"}</p>
+            <label className="field">
+              <span className="kicker">The truth (shown after the answer)</span>
+              <textarea className="edit" rows={2} value={q.truth} onChange={(e) => editQ(i, { truth: e.target.value })} />
+            </label>
+            <label className="field">
+              <span className="kicker">How we know</span>
+              <textarea className="edit" rows={2} value={q.why || ""} onChange={(e) => editQ(i, { why: e.target.value })} />
+            </label>
+            {q.evidence?.length > 0 ? (
+              <div className="field">
+                <span className="kicker">Evidence board</span>
+                {q.evidence.map((e, k) => (
+                  <div className="row top" key={k}>
+                    <textarea className="edit" rows={2} value={e.quote} aria-label={`Evidence quote ${k + 1}`} onChange={(ev) => editQuote(i, k, ev.target.value)} />
+                    <button className="chip" onClick={() => removeQuote(i, k)}>Remove</button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="tiny">No evidence board for this one (the AI's quotes didn't match your slides exactly)</p>
+            )}
           </div>
         ))}
+        {incomplete && <p className="tiny">Fill in every statement and the truth before starting.</p>}
         <div className="row gap">
           <button className="btn ghost" onClick={generate}>Make new ones</button>
-          <button className="btn green" disabled={!result.questions.length} onClick={() => onReady({ title: result.title, questions: result.questions })}>Approve & start game</button>
+          <button className="btn green" disabled={!result.questions.length || incomplete} onClick={() => onReady({ title: result.title, questions: result.questions })}>Approve & start game</button>
         </div>
         {result.model && <p className="tiny">Generated with {result.model}</p>}
       </div>

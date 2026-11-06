@@ -125,3 +125,11 @@ textarea { width: 100%; border: var(--b); padding: 12px; font: inherit; font-siz
 .recap li:first-child { border-top: 0; padding-top: 0; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Teacher review: everything is editable */
+.review li { display: grid; gap: 8px; }
+.edit { width: 100%; border: 2px solid var(--ink); padding: 8px 10px; font: inherit; font-size: 16px; background: #fff; resize: vertical; }
+.field { display: grid; gap: 6px; }
+.row.top { align-items: start; }
+.chip.pick { justify-self: start; }
+.chip.pick.on { background: var(--red); }
